@@ -21,11 +21,7 @@ This will
 
 ## TODO
 
-We can make another version of the dataset prefilled with offsets and sizes.
-
 Support downloading from the multipart zips
-
-Other TODOs in the script so it can be used for more datasets, currently we support ZIP64 file with ZIP and ZIP64 entries that are DEFLATE compressed.
 
 # OpenVid part id parquet
 
@@ -43,9 +39,3 @@ This will
 3. Extract filenames from each central directory
 4. Merge `part_id` into the dataframe according to filename
 5. Save `openvid.parquet`
-
-## TODO
-
-Update to use the new functions from `openvid.py`
-
-Modify to store offsets and sizes.
