@@ -1,0 +1,3 @@
+av
+Pillow
+git+https://github.com/bigdata-pw/florence-tool.git
