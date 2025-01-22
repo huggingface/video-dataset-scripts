@@ -160,3 +160,29 @@ python dataset-scripts/video_processing/add_motion_score.py --path crush/ --parq
 3. Create parquet (`folder_to_parquet`) on the extracted scenes
 4. Extract frames from the scenes (`extract_frames`)
 5. Run any of the other scripts
+
+Note: motion score script uses the videos, motion score is likely performs better with more frames so it uses all the key frames (and an additional frame from the video if there's only 1). Other scripts use the extracted frames for performance.
+
+## Filtering
+
+```python
+import pandas as pd
+
+df = pd.read_parquet("crush.parquet")
+
+# mean pwatermark < 0.5
+import numpy as np
+df[df.pwatermark.apply(lambda x: np.mean(x) < 0.5)]
+# or sum(x) / len(x)
+
+# first frame pwatermark < 0.1
+df[df.pwatermark.apply(lambda x: x[0] < 0.1)]
+
+# all pwatermark < 0.1
+df = df[df.pwatermark.apply(lambda x: all(i < 0.1 for i in x))]
+
+# aesthetic > 5.0
+df = df[df.pwatermark.apply(lambda x: all(i > 5.4 for i in x))]
+
+df.to_parquet("crush_smol.parquet")
+```
