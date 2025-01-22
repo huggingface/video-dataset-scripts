@@ -1,8 +1,11 @@
 # Video Processing
 
+## Prerequisite
+The examples use the folder `cakeify/`, this can be any folder with videos.
+
 ## Folder to Parquet
 
-This creates a basic parquet with `file` column which is the filename of each video in `path`.
+The first step, this creates a basic parquet with `file` column which is the filename of each video in `path`.
 
 Other scripts join to this parquet.
 
@@ -10,29 +13,96 @@ Other scripts join to this parquet.
 python folder_to_parquet.py --path cakeify/ --out-path cakeify.parquet
 ```
 
+## Extract frames
+
+The second step, this extracts up to 3 key frames for use in captioning, watermark detection, etc.
+
+The `first` key frame if there are 1 or more.
+If there are only 2 key frames, we take the `first` and `last`.
+If there are 3 or more key frames, we take the `first`, `mid` and `last`.
+
+```sh
+python extract_frames.py --path cakeify/ --frames-path frames/ --parquet-path cakeify.parquet --parquet-out-path cakeify.parquet
+```
+
+`--path` is the folder with videos.
+`--frames-path` is the folder where frames are saved.
+`--parquet-path` is the `--out-path` from the first step.
+`--parquet-out-path` if you want different versions e.g. `--parquet-out-path cakeify_frames.parquet`
+
 ## Add Captions
 
 This will use Florence-2 `microsoft/Florence-2-large` to run `<CAPTION>`, `<DETAILED_CAPTION>`, `<DENSE_REGION_CAPTION>` and `<OCR_WITH_REGION>` on extracted key frames.
 
-Up to 3 key frames are captioned, first, mid and last. Always first, last if there are >= 2 and mid if there are > 2.
+This uses extracted frames from step 2.
 
 The list of captions is added to the dataframe `caption` and `detailed_caption` columns.
 
 ```sh
-python folder_to_parquet.py --path cakeify/ --parquet-out-path cakeify.parquet  --parquet-path cakeify.parquet --device "cuda" --dtype "float16"
+python add_captions.py --path frames/ --parquet-path cakeify.parquet --parquet-out-path cakeify.parquet --device cuda --dtype float16
 ```
+
+`--path` is the folder with **frames**.
+`--parquet-path` is the `--out-path` from the first step or the `--parquet-out-path` from step 2 if you changed it.
+`--parquet-out-path` if you want to different versions `--parquet-out-path cakeify_captions.parquet`
+
+
+## Add Watermark Laion Score
+
+This will use [LAION-5B-WatermarkDetection](https://github.com/LAION-AI/LAION-5B-WatermarkDetection) to detect watermarks on extracted frames.
+
+This uses extracted frames from step 2.
+
+The list of scores is added to the dataframe `pwatermark` columns.
+
+[Download](https://github.com/LAION-AI/LAION-5B-WatermarkDetection/raw/refs/heads/main/models/watermark_model_v1.pt)
+
+```sh
+python add_watermark_laion_score.py --path frames/ --parquet-path cakeify.parquet --parquet-out-path cakeify.parquet --device cpu --model watermark_model_v1.pt
+```
+
+`--path` is the folder with **frames**.
+`--parquet-path` is the `--out-path` from the first step or the `--parquet-out-path` from step 2 if you changed it.
+`--parquet-out-path` if you want to different versions `--parquet-out-path cakeify_captions.parquet`
+`--device cuda` is optional as this model is fast on CPU.
+
+
+## Add Aesthetic Laion Score
+
+This will use [improved-aesthetic-predictor](https://github.com/christophschuhmann/improved-aesthetic-predictor) to predict an aesthetic score on extracted frames.
+
+This uses extracted frames from step 2.
+
+The list of scores is added to the dataframe `aesthetic_score` columns.
+
+[Download](https://github.com/christophschuhmann/improved-aesthetic-predictor/raw/refs/heads/main/sac+logos+ava1-l14-linearMSE.pth)
+
+```sh
+python add_aesthetic_laion_score.py --path frames/ --parquet-path cakeify.parquet --parquet-out-path cakeify.parquet --device cpu --dtype float32 --model sac+logos+ava1-l14-linearMSE.pth
+```
+
+`--path` is the folder with **frames**.
+`--parquet-path` is the `--out-path` from the first step or the `--parquet-out-path` from step 2 if you changed it.
+`--parquet-out-path` if you want to different versions `--parquet-out-path cakeify_captions.parquet`
+
+Not unusable on CPU, around 1s per image but `--device cuda` and `--dtype float16` is recommended for performance.
+
 
 ## Add Motion Score
 
 This will use opencv to calculate a "motion score" with `OpticalFlowFarneback` and `OpticalFlowPyrLK` on extracted key frames.
 
-This will use all key frames, if there is only 1 key frame, we also read the first frame of the video.
+Different than captions and watermark, this will use all key frames, if there is only 1 key frame, we also read the first frame of the video.
 
 The scores are added to the dataframe with `motion_fb` and `motion_lk` columns.
 
 ```sh
-python folder_to_parquet.py --path cakeify/ --parquet-out-path cakeify.parquet  --parquet-path cakeify.parquet 
+python add_motion_score.py --path cakeify/ --parquet-out-path cakeify.parquet  --parquet-path cakeify.parquet 
 ```
+
+`--path` is the folder with **videos**.
+`--parquet-path` is the `--out-path` from the first step or the `--parquet-out-path` from another step if you changed it.
+`--parquet-out-path` if you want different versions e.g. `--parquet-out-path cakeify_motion_score.parquet`
 
 ## Example Output
 

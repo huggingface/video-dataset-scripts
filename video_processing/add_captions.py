@@ -1,9 +1,9 @@
 import pandas as pd
 import pathlib
+from PIL import Image
 from argparse import ArgumentParser
 from tqdm import tqdm
 from caption_object_ocr import run, load_florence
-from frames import get_key_frames
 
 parser = ArgumentParser()
 parser.add_argument("--path", type=str, required=True)
@@ -38,9 +38,10 @@ task_prompt = [
 data = []
 with tqdm() as pbar:
     for _, row in df.iterrows():
-        video = path.joinpath(row["file"])
-        pbar.set_description(video.name)
-        key_frames = get_key_frames(video)
+        pbar.set_description(row["file"])
+        key_frames = [
+            Image.open(path.joinpath(key_frame)) for key_frame in row["frames"]
+        ]
         pbar.set_postfix_str(f"{len(key_frames)} key frames")
         first = key_frames[0]
         mid = None
@@ -70,20 +71,13 @@ with tqdm() as pbar:
             detailed_caption.append(last["<DETAILED_CAPTION>"])
             region_caption.append(last["<DENSE_REGION_CAPTION>"])
             ocr_region.append(last["<OCR_WITH_REGION>"])
-        frames_data = []
-        for idx, frame in enumerate(frames):
-            frame_path = video.with_stem(f"{video.stem}_{idx}").with_suffix(".jpg")
-            frame.save(frame_path)
-            frames_data.append(frame_path.name)
-        data.append(
-            {
-                "caption": caption,
-                "detailed_caption": detailed_caption,
-                "region_caption": region_caption,
-                "ocr": ocr_region,
-                "frames": frames_data,
-            }
-        )
+        row = {
+            "caption": caption,
+            "detailed_caption": detailed_caption,
+            "region_caption": region_caption,
+            "ocr": ocr_region,
+        }
+        data.append(row)
         pbar.update()
 
 caption_df = pd.DataFrame(data)
