@@ -133,3 +133,56 @@ This will split a video into scenes using `pyscenedetect`. Videos are transcoded
 python video_to_scenes.py --path cakeify/ --out-path cakeify_dataset/ --threshold 27 --min-scene-len 15
 # optionally --duration NUMBER_OF_FRAMES to limit duration of scene detection
 ```
+
+## Example workflow
+
+Example workflow for [crush](https://huggingface.co/datasets/bigdata-pw/crush) dataset.
+
+```sh
+git clone https://github.com/huggingface/dataset-scripts
+mkdir raw_video
+cd raw_video
+yt-dlp -f "bv*[ext=mp4][height<=1080]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b" -o "%(id)s" https://www.youtube.com/playlist?list=PLlFv9Xg5Kmt17Dh70nXJpjaezzGT-gQV5
+cd ..
+python dataset-scripts/video_processing/video_to_scenes.py --path raw_video/ --out-path crush/ --threshold 27 --min-scene-len 15
+python dataset-scripts/video_processing/folder_to_parquet.py --path crush/ --out-path crush.parquet
+python dataset-scripts/video_processing/extract_frames.py --path crush/ --frames-path frames/ --parquet-path crush.parquet --parquet-out-path crush.parquet
+python dataset-scripts/video_processing/add_captions.py --path frames/ --parquet-path crush.parquet --parquet-out-path crush.parquet --device cuda --dtype float16
+python dataset-scripts/video_processing/add_watermark_laion_score.py --path frames/ --parquet-path crush.parquet --parquet-out-path crush.parquet --device cpu
+python dataset-scripts/video_processing/add_aesthetic_laion_score.py --path frames/ --parquet-path crush.parquet --parquet-out-path crush.parquet --device cpu --dtype float32
+python dataset-scripts/video_processing/add_motion_score.py --path crush/ --parquet-path crush.parquet --parquet-out-path crush.parquet
+```
+
+### General steps
+
+1. Download source videos
+2. Extract scenes (`video_to_scenes`)
+3. Create parquet (`folder_to_parquet`) on the extracted scenes
+4. Extract frames from the scenes (`extract_frames`)
+5. Run any of the other scripts
+
+Note: motion score script uses the videos, motion score is likely performs better with more frames so it uses all the key frames (and an additional frame from the video if there's only 1). Other scripts use the extracted frames for performance.
+
+## Filtering
+
+```python
+import pandas as pd
+
+df = pd.read_parquet("crush.parquet")
+
+# mean pwatermark < 0.5
+import numpy as np
+df[df.pwatermark.apply(lambda x: np.mean(x) < 0.5)]
+# or sum(x) / len(x)
+
+# first frame pwatermark < 0.1
+df[df.pwatermark.apply(lambda x: x[0] < 0.1)]
+
+# all pwatermark < 0.1
+df = df[df.pwatermark.apply(lambda x: all(i < 0.1 for i in x))]
+
+# aesthetic > 5.0
+df = df[df.pwatermark.apply(lambda x: all(i > 5.4 for i in x))]
+
+df.to_parquet("crush_smol.parquet")
+```
