@@ -28,7 +28,12 @@ load_florence(
 
 df = pd.read_parquet(parquet_path)
 
-task_prompt = ["<CAPTION>", "<DETAILED_CAPTION>"]
+task_prompt = [
+    "<DENSE_REGION_CAPTION>",
+    "<OCR_WITH_REGION>",
+    "<CAPTION>",
+    "<DETAILED_CAPTION>",
+]
 
 data = []
 with tqdm() as pbar:
@@ -45,18 +50,40 @@ with tqdm() as pbar:
         elif len(key_frames) > 2:
             mid = key_frames[len(key_frames) // 2]
             last = key_frames[-1]
+        frames = [first]
         first = run(first, task_prompt=task_prompt)
         caption = [first["<CAPTION>"]]
         detailed_caption = [first["<DETAILED_CAPTION>"]]
+        region_caption = [first["<DENSE_REGION_CAPTION>"]]
+        ocr_region = [first["<OCR_WITH_REGION>"]]
         if mid:
+            frames.append(mid)
             mid = run(mid, task_prompt=task_prompt)
             caption.append(mid["<CAPTION>"])
             detailed_caption.append(mid["<DETAILED_CAPTION>"])
+            region_caption.append(mid["<DENSE_REGION_CAPTION>"])
+            ocr_region.append(mid["<OCR_WITH_REGION>"])
         if last:
+            frames.append(last)
             last = run(last, task_prompt=task_prompt)
             caption.append(last["<CAPTION>"])
             detailed_caption.append(last["<DETAILED_CAPTION>"])
-        data.append({"caption": caption, "detailed_caption": detailed_caption})
+            region_caption.append(last["<DENSE_REGION_CAPTION>"])
+            ocr_region.append(last["<OCR_WITH_REGION>"])
+        frames_data = []
+        for idx, frame in enumerate(frames):
+            frame_path = video.with_stem(f"{video.stem}_{idx}").with_suffix(".jpg")
+            frame.save(frame_path)
+            frames_data.append(frame_path.name)
+        data.append(
+            {
+                "caption": caption,
+                "detailed_caption": detailed_caption,
+                "region_caption": region_caption,
+                "ocr": ocr_region,
+                "frames": frames_data,
+            }
+        )
         pbar.update()
 
 caption_df = pd.DataFrame(data)

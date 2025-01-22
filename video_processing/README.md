@@ -12,7 +12,7 @@ python folder_to_parquet.py --path cakeify/ --out-path cakeify.parquet
 
 ## Add Captions
 
-This will use Florence-2 `microsoft/Florence-2-large` to run `<CAPTION>` and `<DETAILED_CAPTION>` on extracted key frames.
+This will use Florence-2 `microsoft/Florence-2-large` to run `<CAPTION>`, `<DETAILED_CAPTION>`, `<DENSE_REGION_CAPTION>` and `<OCR_WITH_REGION>` on extracted key frames.
 
 Up to 3 key frames are captioned, first, mid and last. Always first, last if there are >= 2 and mid if there are > 2.
 
@@ -53,4 +53,13 @@ python folder_to_parquet.py --path cakeify/ --parquet-out-path cakeify.parquet  
 12  GJ2M77Yz60c-Scene-063.mp4 -1.828094e-06   0.023520    [A can of coca cola sitting on top of a table.]  [The image shows a can of Coca Cola sitting on...
 13  GJ2M77Yz60c-Scene-071.mp4 -2.134615e-06   0.010385  [A wireless router sitting on top of a wooden ...  [The image shows a TP-Link TL-WR940N 300Mbps W...
 14  GJ2M77Yz60c-Scene-227.mp4  1.133161e-01   0.928008  [A cup of kfc chicken with a knife sticking ou...  [The image shows a cup of KFC chicken nuggets ...
+```
+
+## Video to Scenes
+
+This will split a video into scenes using `pyscenedetect`. Videos are transcoded to ensure exact cuts, note that we can implement a lossless `copy` version however cuts will need to be snapped to keyframes which may produce bad clips (part scene A, part scene B).
+
+```sh
+python video_to_scenes.py --path cakeify/ --out-path cakeify_dataset/ --threshold 27 --min-scene-len 15
+# optionally --duration NUMBER_OF_FRAMES to limit duration of scene detection
 ```
