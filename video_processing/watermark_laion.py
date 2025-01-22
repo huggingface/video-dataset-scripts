@@ -2,6 +2,7 @@ import timm
 import torch
 import torch.nn as nn
 import torchvision.transforms as T
+from huggingface_hub import hf_hub_download
 
 MODEL, TRANSFORMS = None, None
 
@@ -25,7 +26,8 @@ def load_watermark_laion(device, model_path):
         nn.ReLU(),
         nn.Linear(in_features=256, out_features=2),
     )
-
+    if model_path is None:
+        model_path = hf_hub_download("finetrainers/laion-watermark-detection", "watermark_model_v1.pt")
     state_dict = torch.load(model_path, weights_only=True)
     MODEL.load_state_dict(state_dict)
     MODEL.eval().to(device)

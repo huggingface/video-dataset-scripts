@@ -55,11 +55,11 @@ This uses extracted frames from step 2.
 
 The list of scores is added to the dataframe `pwatermark` columns.
 
-[Download](https://github.com/LAION-AI/LAION-5B-WatermarkDetection/raw/refs/heads/main/models/watermark_model_v1.pt)
-
 ```sh
-python add_watermark_laion_score.py --path frames/ --parquet-path cakeify.parquet --parquet-out-path cakeify.parquet --device cpu --model watermark_model_v1.pt
+python add_watermark_laion_score.py --path frames/ --parquet-path cakeify.parquet --parquet-out-path cakeify.parquet --device cpu 
 ```
+
+It will automatically download the for the watermark scorer from [here](https://huggingface.co/finetrainers/laion-watermark-detection). You also specify your own through the `--model` argument.
 
 `--path` is the folder with **frames**.
 `--parquet-path` is the `--out-path` from the first step or the `--parquet-out-path` from step 2 if you changed it.
@@ -75,11 +75,11 @@ This uses extracted frames from step 2.
 
 The list of scores is added to the dataframe `aesthetic_score` columns.
 
-[Download](https://github.com/christophschuhmann/improved-aesthetic-predictor/raw/refs/heads/main/sac+logos+ava1-l14-linearMSE.pth)
-
 ```sh
-python add_aesthetic_laion_score.py --path frames/ --parquet-path cakeify.parquet --parquet-out-path cakeify.parquet --device cpu --dtype float32 --model sac+logos+ava1-l14-linearMSE.pth
+python add_aesthetic_laion_score.py --path frames/ --parquet-path cakeify.parquet --parquet-out-path cakeify.parquet --device cpu --dtype float32
 ```
+
+It will automatically download the MLP params for the aeshtetics predictor from [here](https://huggingface.co/trl-lib/ddpo-aesthetic-predictor). You also specify your own through the `--model` argument.
 
 `--path` is the folder with **frames**.
 `--parquet-path` is the `--out-path` from the first step or the `--parquet-out-path` from step 2 if you changed it.

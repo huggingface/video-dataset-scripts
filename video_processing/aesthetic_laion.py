@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from transformers import CLIPVisionModelWithProjection, CLIPProcessor
+from huggingface_hub import hf_hub_download
 
 MODEL = None
 
@@ -33,7 +34,9 @@ class AestheticScorer(torch.nn.Module):
         self.processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
 
         self.mlp = MLP()
-        state_dict = torch.load(path, weights_only=True, map_location=torch.device('cpu'))
+        if path is None:
+            path = hf_hub_download("trl-lib/ddpo-aesthetic-predictor", "aesthetic-model.pth")
+        state_dict = torch.load(path, weights_only=True, map_location=torch.device("cpu"))
         self.mlp.load_state_dict(state_dict)
         self.dtype = dtype
         self.eval()
