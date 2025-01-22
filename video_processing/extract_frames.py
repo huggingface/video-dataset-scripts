@@ -25,6 +25,9 @@ data = []
 with tqdm() as pbar:
     for _, row in df.iterrows():
         video = path.joinpath(row["file"])
+        frames_dir = video.parent.with_name("frames")
+        if not frames_dir.exists():
+            frames_dir.mkdir(parents=True, exist_ok=True)
         pbar.set_description(video.name)
         key_frames = get_key_frames(video)
         pbar.set_postfix_str(f"{len(key_frames)} key frames")
@@ -40,9 +43,7 @@ with tqdm() as pbar:
         for idx, frame in enumerate([first, mid, last]):
             if frame is None:
                 continue
-            frame_path = video.parent.with_name("frames").joinpath(
-                f"{video.stem}_{idx}.jpg"
-            )
+            frame_path = frames_dir.joinpath(f"{video.stem}_{idx}.jpg")
             if not frame_path.exists():
                 frame.save(frame_path)
             frames.append(frame_path.name)
