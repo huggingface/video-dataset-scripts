@@ -28,9 +28,7 @@ class MLP(nn.Module):
 class AestheticScorer(torch.nn.Module):
     def __init__(self, dtype, path):
         super().__init__()
-        self.clip = CLIPVisionModelWithProjection.from_pretrained(
-            "openai/clip-vit-large-patch14"
-        )
+        self.clip = CLIPVisionModelWithProjection.from_pretrained("openai/clip-vit-large-patch14")
         self.processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
 
         self.mlp = MLP()

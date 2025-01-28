@@ -28,9 +28,7 @@ data = []
 with tqdm() as pbar:
     for _, row in df.iterrows():
         pbar.set_description(row["file"])
-        key_frames = [
-            Image.open(path.joinpath(key_frame)) for key_frame in row["frames"]
-        ]
+        key_frames = [Image.open(path.joinpath(key_frame)) for key_frame in row["frames"]]
         pbar.set_postfix_str(f"{len(key_frames)} key frames")
         first = key_frames[0]
         mid = None

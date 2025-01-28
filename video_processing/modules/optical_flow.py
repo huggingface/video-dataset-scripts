@@ -41,9 +41,7 @@ def compute_farneback_optical_flow(frames):
 def compute_lk_optical_flow(frames):
     # params for ShiTomasi corner detection
     maxCorners = 50
-    feature_params = dict(
-        maxCorners=maxCorners, qualityLevel=0.3, minDistance=7, blockSize=7
-    )
+    feature_params = dict(maxCorners=maxCorners, qualityLevel=0.3, minDistance=7, blockSize=7)
     # Parameters for lucas kanade optical flow
     lk_params = dict(
         winSize=(15, 15),
@@ -62,9 +60,7 @@ def compute_lk_optical_flow(frames):
     for frame in frames[1:]:
         frame_gray = cv2.cvtColor(np.array(frame), cv2.COLOR_BGR2GRAY)
         # calculate optical flow
-        p1, st, err = cv2.calcOpticalFlowPyrLK(
-            old_gray, frame_gray, p0, None, **lk_params
-        )
+        p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params)
         # Select good points
         if p1 is not None:
             good_new = p1[st == 1]
@@ -73,9 +69,7 @@ def compute_lk_optical_flow(frames):
         for i, (new, old) in enumerate(zip(good_new, good_old)):
             a, b = new.ravel()
             c, d = old.ravel()
-            mask = cv2.line(
-                mask, (int(a), int(b)), (int(c), int(d)), color[i].tolist(), 2
-            )
+            mask = cv2.line(mask, (int(a), int(b)), (int(c), int(d)), color[i].tolist(), 2)
         old_gray = frame_gray.copy()
         p0 = good_new.reshape(-1, 1, 2)
     return mask

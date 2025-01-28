@@ -63,21 +63,11 @@ class ZipStreamFile:
     ):
         struct_format = "<4sHHHHHIIIHH"
         struct_size = struct.calcsize(struct_format)
-        headers = {
-            "Range": f"bytes={self.file_offset}-{self.file_offset+struct_size-1}"
-        }
+        headers = {"Range": f"bytes={self.file_offset}-{self.file_offset+struct_size-1}"}
         local_file_header = requests.get(self.url, headers=headers, stream=True).content
-        local_file_header = LocalFileHeader(
-            *struct.unpack(struct_format, local_file_header)
-        )
-        data_offset = (
-            struct_size
-            + local_file_header.file_name_length
-            + local_file_header.extra_field_length
-        )
-        headers = {
-            "Range": f"bytes={self.file_offset+data_offset}-{self.file_offset+data_offset+self.file_size-1}"
-        }
+        local_file_header = LocalFileHeader(*struct.unpack(struct_format, local_file_header))
+        data_offset = struct_size + local_file_header.file_name_length + local_file_header.extra_field_length
+        headers = {"Range": f"bytes={self.file_offset+data_offset}-{self.file_offset+data_offset+self.file_size-1}"}
         data = requests.get(self.url, headers=headers, stream=True).content
         if local_file_header.method == 8:
             data = zlib.decompress(data, -15)
@@ -99,9 +89,7 @@ class ZipStream:
     @classmethod
     def size(self, url: str):
         headers = {"Range": f"bytes=-1"}
-        return int(
-            requests.get(url, headers=headers).headers["Content-Range"].split("/")[-1]
-        )
+        return int(requests.get(url, headers=headers).headers["Content-Range"].split("/")[-1])
 
     @classmethod
     def get_central_directory(self, url: str, offset: Optional[int] = None):
@@ -122,9 +110,7 @@ class ZipStream:
         files = []
         offset = 0
         while offset <= len(central_directory):
-            file, offset = ZipStream.get_file(
-                url=url, central_directory=central_directory, offset=offset
-            )
+            file, offset = ZipStream.get_file(url=url, central_directory=central_directory, offset=offset)
             if file is None:
                 continue
             if file_to_get is None:
@@ -140,14 +126,9 @@ class ZipStream:
         buffer = central_directory[offset : offset + struct_size]
         if len(buffer) < struct_size:
             return None, offset + struct_size
-        central_directory_file_header = CentralDirectoryFileHeader(
-            *struct.unpack(struct_format, buffer)
-        )
+        central_directory_file_header = CentralDirectoryFileHeader(*struct.unpack(struct_format, buffer))
         filename = central_directory[
-            offset
-            + struct_size : offset
-            + struct_size
-            + central_directory_file_header.file_name_length
+            offset + struct_size : offset + struct_size + central_directory_file_header.file_name_length
         ].decode("utf-8")
         next_offset = (
             offset
@@ -163,13 +144,9 @@ class ZipStream:
         )
         if is_zip64:
             extra = central_directory[
-                offset
-                + struct_size
-                + central_directory_file_header.file_name_length : next_offset
+                offset + struct_size + central_directory_file_header.file_name_length : next_offset
             ]
-            central_directory_file_header.relative_offset = int.from_bytes(
-                extra[-8:], byteorder="little"
-            )
+            central_directory_file_header.relative_offset = int.from_bytes(extra[-8:], byteorder="little")
         return (
             ZipStreamFile(
                 url=url,
@@ -187,10 +164,6 @@ class ZipStream:
         offset: Optional[int] = None,
     ):
         self.url = url
-        central_directory = central_directory or ZipStream.get_central_directory(
-            url=self.url, offset=offset
-        )
+        central_directory = central_directory or ZipStream.get_central_directory(url=self.url, offset=offset)
         self.central_directory = central_directory
-        self.files = ZipStream.get_files(
-            url=self.url, central_directory=self.central_directory
-        )
+        self.files = ZipStream.get_files(url=self.url, central_directory=self.central_directory)
