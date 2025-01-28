@@ -24,7 +24,5 @@ for extension in EXTENSIONS:
     videos.extend(list(path.glob(f"*.{extension}")))
 
 for video in tqdm(videos):
-    scenes = get_scenes(
-        str(video), threshold=threshold, min_scene_len=min_scene_len, duration=duration
-    )
+    scenes = get_scenes(str(video), threshold=threshold, min_scene_len=min_scene_len, duration=duration)
     split_video_ffmpeg(str(video), scene_list=scenes, output_dir=str(out_path))

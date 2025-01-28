@@ -23,9 +23,7 @@ filenames = set(aesthetic["video"])
 
 for part_id in part_ids:
     stream = ZipStream(URL.format(part=part_id))
-    files = list(
-        filter(lambda file: file.filename.split("/")[-1] in filenames, stream.files)
-    )
+    files = list(filter(lambda file: file.filename.split("/")[-1] in filenames, stream.files))
 
     with ThreadPoolExecutor(max_workers=8) as executor:
         pbar = tqdm(desc="download", total=len(files))
