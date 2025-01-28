@@ -3,7 +3,7 @@ import pathlib
 from argparse import ArgumentParser
 from tqdm import tqdm
 from frames import get_key_frames, get_frames
-from optical_flow import (
+from modules import (
     compute_farneback_optical_flow,
     compute_lk_optical_flow,
     _downscale_maps,

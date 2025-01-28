@@ -3,7 +3,7 @@ import pathlib
 from PIL import Image
 from argparse import ArgumentParser
 from tqdm import tqdm
-from caption_object_ocr import run, load_florence
+from modules import run, load_florence
 
 parser = ArgumentParser()
 parser.add_argument("--path", type=str, required=True)

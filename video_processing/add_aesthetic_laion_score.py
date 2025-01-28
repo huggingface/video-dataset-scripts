@@ -3,7 +3,7 @@ import pathlib
 from PIL import Image
 from argparse import ArgumentParser
 from tqdm import tqdm
-from aesthetic_laion import load_aesthetic_laion, run_aesthetic_laion
+from modules import load_aesthetic_laion, run_aesthetic_laion
 
 parser = ArgumentParser()
 parser.add_argument("--path", type=str, required=True)
