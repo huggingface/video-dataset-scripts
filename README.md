@@ -9,3 +9,9 @@ Our goal is to make tooling for video generation datasets as established by crea
 The repository consists of the tooling we are developing to make it easy for the community to build their own datasets for fine-tuning video generation models. Check out our introduction [blog post](https://github.com/huggingface/blog/pull/2631/) here to learn more and head to the [`video_processing`](./video_processing) directory to get started.
 
 We plan to keep this repository easy to follow along and nimble. 
+
+## Features planned
+
+- [ ] Age detector
+- [ ] NSFW detector
+- [ ] Scene categorizer
