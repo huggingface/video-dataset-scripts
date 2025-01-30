@@ -17,6 +17,6 @@ def run_nsfw(image):
     if not isinstance(image, list):
         image = [image]
     inputs = PROCESSOR(images=image, return_tensors="pt").to(MODEL.device)
-    outputs = MODEL(**inputs)
-    logits = outputs.logits
-    return torch.nn.functional.softmax(logits, dim=1)[:, 0]
+    outputs = MODEL(**inputs).logits
+    predicted_labels = outputs.argmax(-1)
+    return [MODEL.config.id2label[p.cpu().item()] for p in predicted_labels]

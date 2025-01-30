@@ -105,6 +105,19 @@ python add_nsfw_score.py --path frames/ --parquet-path cakeify.parquet --parquet
 
 Not unusable on CPU, around 1s per image but `--device cuda` is recommended for performance.
 
+Output should look like so:
+
+```sh
+  nsfw_status
+0    [normal]
+1    [normal]
+2    [normal]
+                        file                         frames nsfw_status
+0  -IvRtqwaetM-Scene-050.mp4  [-IvRtqwaetM-Scene-050_0.jpg]    [normal]
+1  -IvRtqwaetM-Scene-002.mp4  [-IvRtqwaetM-Scene-002_0.jpg]    [normal]
+2  -IvRtqwaetM-Scene-005.mp4  [-IvRtqwaetM-Scene-005_0.jpg]    [normal]
+```
+
 ## Add Motion Score
 
 This will use opencv to calculate a "motion score" with `OpticalFlowFarneback` and `OpticalFlowPyrLK` on extracted key frames.
