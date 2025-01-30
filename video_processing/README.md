@@ -87,6 +87,23 @@ It will automatically download the MLP params for the aeshtetics predictor from 
 
 Not unusable on CPU, around 1s per image but `--device cuda` and `--dtype float16` is recommended for performance.
 
+## Add NSFW Score
+
+This will use the [Falconsai/nsfw_image_detection](https://huggingface.co/Falconsai/nsfw_image_detection) model to predict an NSFW score on a frame-by-frame basis. 
+
+This uses extracted frames from step 2.
+
+The list of scores is added to the dataframe `nsfw` columns.
+
+```sh
+python add_nsfw_score.py --path frames/ --parquet-path cakeify.parquet --parquet-out-path cakeify.parquet --device cuda
+```
+
+`--path` is the folder with **frames**.
+`--parquet-path` is the `--out-path` from the first step or the `--parquet-out-path` from step 2 if you changed it.
+`--parquet-out-path` if you want to different versions `--parquet-out-path cakeify_captions.parquet`
+
+Not unusable on CPU, around 1s per image but `--device cuda` is recommended for performance.
 
 ## Add Motion Score
 

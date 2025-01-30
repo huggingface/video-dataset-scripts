@@ -36,7 +36,7 @@ with tqdm() as pbar:
             mid = key_frames[len(key_frames) // 2]
             last = key_frames[-1]
         frames = [frame for frame in [first, mid, last] if frame is not None]
-        scores = [tensor.cpu().item() for tensor in run_nsfw(frames)]
+        scores = [round(tensor.cpu().item(), 3) for tensor in run_nsfw(frames)]
         data.append({"nsfw": scores})
         pbar.update()
 

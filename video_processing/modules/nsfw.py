@@ -19,5 +19,4 @@ def run_nsfw(image):
     inputs = PROCESSOR(images=image, return_tensors="pt").to(MODEL.device)
     outputs = MODEL(**inputs)
     logits = outputs.logits
-
     return torch.nn.functional.softmax(logits, dim=1)[:, 0]
