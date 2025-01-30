@@ -3,24 +3,21 @@ import pathlib
 from PIL import Image
 from argparse import ArgumentParser
 from tqdm import tqdm
-from modules import load_aesthetic_laion, run_aesthetic_laion
+from modules import load_nsfw, run_nsfw
+
 
 parser = ArgumentParser()
 parser.add_argument("--path", type=str, required=True)
 parser.add_argument("--parquet-path", type=str, required=True)
 parser.add_argument("--parquet-out-path", type=str, required=True)
 parser.add_argument("--device", type=str, required=True)
-parser.add_argument("--model", type=str, default=None)
-parser.add_argument("--dtype", type=str, required=True)
 args = parser.parse_args()
 path = pathlib.Path(args.path)
 parquet_path = pathlib.Path(args.parquet_path)
 parquet_out_path = pathlib.Path(args.parquet_out_path)
 device = args.device
-dtype = args.dtype
-model_path = args.model
 
-load_aesthetic_laion(device=device, model_path=model_path, dtype=dtype)
+load_nsfw(device)
 
 df = pd.read_parquet(parquet_path)
 
@@ -39,15 +36,15 @@ with tqdm() as pbar:
             mid = key_frames[len(key_frames) // 2]
             last = key_frames[-1]
         frames = [frame for frame in [first, mid, last] if frame is not None]
-        scores = [tensor.cpu().item() for tensor in run_aesthetic_laion(frames)]
-        data.append({"aesthetic_score": scores})
+        scores = [tensor.cpu().item() for tensor in run_nsfw(frames)]
+        data.append({"nsfw": scores})
         pbar.update()
 
-aesthetic_df = pd.DataFrame(data)
+nsfw_df = pd.DataFrame(data)
 
-print(aesthetic_df)
+print(nsfw_df)
 
-df = df.join(aesthetic_df)
+df = df.join(nsfw_df)
 
 print(df)
 
