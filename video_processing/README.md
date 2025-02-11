@@ -1,5 +1,11 @@
 # Video Processing
 
+## Overview of the available filters
+* Watermark detection
+* Aesthetic scoring
+* NSFW scoring
+* Motion scoring
+
 ## Prerequisite
 The examples use the folder `cakeify/`, this can be any folder with videos.
 
