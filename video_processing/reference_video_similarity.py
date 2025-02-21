@@ -2,6 +2,7 @@ import os
 import torch
 from transformers import SiglipVisionModel, SiglipImageProcessor
 from PIL import Image
+from tqdm import tqdm
 import numpy as np
 import argparse
 import csv
@@ -36,14 +37,14 @@ def compute_video_embedding(frames, model, preprocessor, device, batch_size=0):
     return video_embedding.numpy()
 
 
-def compute_image_embedding(image_path, model, preprocess, device):
+def compute_image_embedding(image_path, model, preprocessor, device):
     """
     Computes an embedding for a single image.
     """
     image = Image.open(image_path).convert("RGB")
-    image_input = preprocess(image).unsqueeze(0).to(device)
+    image_input = preprocessor(image, return_tensors="pt").to(device)
     with torch.no_grad() and torch.autocast(torch.device(device).type, dtype=torch.float16):
-        embedding = model(image_input).pooler_output
+        embedding = model(**image_input).pooler_output
         embedding = embedding / embedding.norm(dim=-1, keepdim=True)
     return embedding.cpu().numpy().flatten()
 
@@ -62,6 +63,16 @@ def compute_reference_embedding(ref_path, model, preprocessor, device, batch_siz
 
 @torch.no_grad()
 def main(args):
+    # List video files in the folder (supports common video extensions)
+    video_extensions = (".mp4", ".avi", ".mov", ".mkv")
+    video_files = [
+        os.path.join(args.videos_folder, f)
+        for f in os.listdir(args.videos_folder)
+        if f.lower().endswith(video_extensions)
+    ]
+
+    assert video_files
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = SiglipVisionModel.from_pretrained("google/siglip-so400m-patch14-384").to(device)
     preprocessor = SiglipImageProcessor.from_pretrained("google/siglip-so400m-patch14-384")
@@ -82,18 +93,11 @@ def main(args):
     ref_embedding = np.mean(ref_embeddings, axis=0)
     ref_embedding = ref_embedding / np.linalg.norm(ref_embedding)
 
-    # List video files in the folder (supports common video extensions)
-    video_extensions = (".mp4", ".avi", ".mov", ".mkv")
-    video_files = [
-        os.path.join(args.videos_folder, f)
-        for f in os.listdir(args.videos_folder)
-        if f.lower().endswith(video_extensions)
-    ]
-
     results = []
-    for video_path in video_files:
-        print(f"Processing {video_path}...")
-        frames = get_frames(video_path)
+    pbar = tqdm(video_files, desc="Computing video embeddings.")
+    for video_path in pbar:
+        pbar.set_postfix_str(f"{video_path}")
+        frames = next(iter(frames))
         frames = [frame.to_image() for frame in frames]
         if len(frames) == 0:
             print(f"Could not extract frames from {video_path}")
@@ -119,12 +123,31 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Video similarity inference using CLIP with PyAV")
-    parser.add_argument("--videos_folder", type=str, required=True, help="Path to folder containing videos.")
-    parser.add_argument("--reference", type=str, nargs="+", required=True, help="Reference image/video file(s).")
+    parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--batch_size", type=int, default=0, help="Batch size for inference (default: process all frames at once)."
+        "--videos_folder",
+        type=str,
+        required=True,
+        help="Path to folder containing videos.",
     )
-    parser.add_argument("--output_csv", type=str, default="results.csv", help="Path to the output CSV file.")
+    parser.add_argument(
+        "--reference",
+        type=str,
+        nargs="+",
+        required=True,
+        help="Reference image/video file(s).",
+    )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=0,
+        help="Batch size for inference (default: process all frames at once).",
+    )
+    parser.add_argument(
+        "--output_csv",
+        type=str,
+        default="results.csv",
+        help="Path to the output CSV file.",
+    )
     args = parser.parse_args()
     main(args)
