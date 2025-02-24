@@ -5,6 +5,7 @@
 * Aesthetic scoring
 * NSFW scoring
 * Motion scoring
+* Filtering videos w.r.t reference videos/images
 
 ## Prerequisite
 The examples use the folder `cakeify/`, this can be any folder with videos.
@@ -221,4 +222,19 @@ df = df[df.pwatermark.apply(lambda x: all(i < 0.1 for i in x))]
 df = df[df.pwatermark.apply(lambda x: all(i > 5.4 for i in x))]
 
 df.to_parquet("crush_smol.parquet")
+```
+
+## Reference filtering
+
+You may filter your videos matching with a reference video/image for better control. We provide the `reference_video_similarity.py` script for this purpose. It can be called like so:
+
+```bash
+python reference_video_similarity.py --videos_folder=... --reference=reference_image.png
+```
+
+The `--videos_folder` should contain the videos at the top-level. `--reference` can either be an image or a video. You can pass a list of references too:
+
+```bash
+python reference_video_similarity.py --videos_folder=... \
+  --reference=reference_image_1.png reference_image_2.png
 ```
