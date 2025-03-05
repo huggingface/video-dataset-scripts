@@ -6,6 +6,7 @@
 * NSFW scoring
 * Motion scoring
 * Filtering videos w.r.t reference videos/images
+* Shot categories (color, lighting, composition, etc.)
 
 ## Prerequisite
 The examples use the folder `cakeify/`, this can be any folder with videos.
@@ -140,6 +141,35 @@ python add_motion_score.py --path cakeify/ --parquet-out-path cakeify.parquet  -
 `--path` is the folder with **videos**.
 `--parquet-path` is the `--out-path` from the first step or the `--parquet-out-path` from another step if you changed it.
 `--parquet-out-path` if you want different versions e.g. `--parquet-out-path cakeify_motion_score.parquet`
+
+## Add Shot Categories
+
+This will use a fine-tune of Florence-2, [diffusers/shot-categorizer-v0](https://huggingface.co/diffusers/shot-categorizer-v0) and infer shot information on the key video frames. We follow the same strategy as above:
+
+> Different than captions and watermark, this will use all key frames, if there is only 1 key frame, we also read the first frame of the video.
+
+The categories are added to the dataframe with `color`, `lighting`, `lighting_type`, and
+`composition` columns.
+
+```sh
+python add_shot_categories.py --path frames/ --parquet-path cakeify.parquet --parquet-out-path cakeify.parquet --device cuda --dtype float16
+```
+
+`--path` is the folder with **frames**.
+`--parquet-path` is the `--out-path` from the first step or the `--parquet-out-path` from step 2 if you changed it.
+`--parquet-out-path` if you want to different versions `--parquet-out-path cakeify_captions.parquet`
+
+Sample output:
+
+```sh
+                                                color  ...               composition
+0   [Desaturated, Black and White, Desaturated, Bl...  ...        [Center, Balanced]
+1                      [Desaturated, Black and White]  ...                [Balanced]
+2                      [Desaturated, Black and White]  ...                  [Center]
+3   [Desaturated, Black and White, Desaturated, Bl...  ...  [Left heavy, Left heavy]
+4                      [Desaturated, Black and White]  ...                [Balanced]
+..                                                ...  ...                       ...
+```
 
 ## Example Output
 
