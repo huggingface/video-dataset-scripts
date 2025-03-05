@@ -22,6 +22,7 @@ load_florence(
     hf_hub_or_path="diffusers/shot-categorizer-v0",
     device=device,
     dtype=dtype,
+    check_task_types=False
 )
 
 df = pd.read_parquet(parquet_path)
