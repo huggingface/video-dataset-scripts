@@ -268,3 +268,5 @@ The `--videos_folder` should contain the videos at the top-level. `--reference` 
 python reference_video_similarity.py --videos_folder=... \
   --reference=reference_image_1.png reference_image_2.png
 ```
+
+We leverage the vision encoder of SigLIP ([`google/siglip-so400m-patch14-384`](https://hf.co/google/siglip-so400m-patch14-384) for this.
