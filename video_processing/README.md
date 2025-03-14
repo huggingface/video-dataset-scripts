@@ -262,11 +262,21 @@ You may filter your videos matching with a reference video/image for better cont
 python reference_video_similarity.py --videos_folder=... --reference=reference_image.png
 ```
 
-The `--videos_folder` should contain the videos at the top-level. `--reference` can either be an image or a video. You can pass a list of references too:
+The `--videos_folder` should contain the videos at the top-level. `--reference` can either be an image or a video. You can pass a list of references too like so:
 
 ```bash
 python reference_video_similarity.py --videos_folder=... \
-  --reference=reference_image_1.png reference_image_2.png
+  --reference=reference_image_1.png,reference_image_2.png
 ```
+
+As a third option, you can also pass a folder containing the reference images or videos to `--reference`:
+
+```bash
+python reference_video_similarity.py --videos_folder=... --reference=<PATH_TO_FOLDER>
+```
+
+You can vary the `--max_num_frames` and the `--batch_size` arguments to control the memory consumption.
+
+At the end of the execution of the script, you should expect to see parquet file having `video_path`s and the `similarity` scores.
 
 We leverage the vision encoder of SigLIP ([`google/siglip-so400m-patch14-384`](https://hf.co/google/siglip-so400m-patch14-384)) for this.
