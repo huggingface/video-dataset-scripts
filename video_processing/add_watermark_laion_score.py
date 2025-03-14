@@ -3,7 +3,7 @@ import pathlib
 from PIL import Image
 from argparse import ArgumentParser
 from tqdm import tqdm
-from modules import load_watermark_laion, run_watermark_laion
+from modules import load_watermark_laion, run_watermark_laion, separate_key_frames_from_row
 
 parser = ArgumentParser()
 parser.add_argument("--path", type=str, required=True)
@@ -26,16 +26,8 @@ data = []
 with tqdm() as pbar:
     for _, row in df.iterrows():
         pbar.set_description(row["file"])
-        key_frames = [Image.open(path.joinpath(key_frame)) for key_frame in row["frames"]]
+        key_frames, first, mid, last = separate_key_frames_from_row(path, row)
         pbar.set_postfix_str(f"{len(key_frames)} key frames")
-        first = key_frames[0]
-        mid = None
-        last = None
-        if len(key_frames) == 2:
-            last = key_frames[1]
-        elif len(key_frames) > 2:
-            mid = key_frames[len(key_frames) // 2]
-            last = key_frames[-1]
         frames = [frame for frame in [first, mid, last] if frame is not None]
         scores = [tensor.cpu().item() for tensor in run_watermark_laion(frames)]
         data.append({"pwatermark": scores})
