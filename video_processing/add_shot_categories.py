@@ -18,12 +18,7 @@ parquet_out_path = pathlib.Path(args.parquet_out_path)
 device = args.device
 dtype = args.dtype
 
-load_florence(
-    hf_hub_or_path="diffusers/shot-categorizer-v0",
-    device=device,
-    dtype=dtype,
-    check_task_types=False
-)
+load_florence(hf_hub_or_path="diffusers/shot-categorizer-v0", device=device, dtype=dtype, check_task_types=False)
 
 df = pd.read_parquet(parquet_path)
 

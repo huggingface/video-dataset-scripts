@@ -6,7 +6,7 @@ from tqdm import tqdm
 import numpy as np
 import argparse
 import pandas as pd
-from frames import get_frames
+from modules import get_frames
 
 
 def compute_video_embedding(frames, model, preprocessor, device, dtype):

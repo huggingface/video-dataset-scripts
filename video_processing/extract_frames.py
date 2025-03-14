@@ -2,7 +2,7 @@ import pandas as pd
 import pathlib
 from argparse import ArgumentParser
 from tqdm import tqdm
-from frames import get_key_frames
+from modules import get_key_frames
 
 parser = ArgumentParser()
 parser.add_argument("--path", type=str, required=True)
