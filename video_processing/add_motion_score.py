@@ -2,12 +2,13 @@ import pandas as pd
 import pathlib
 from argparse import ArgumentParser
 from tqdm import tqdm
-from frames import get_key_frames, get_frames
 from modules import (
     compute_farneback_optical_flow,
     compute_lk_optical_flow,
     _downscale_maps,
     _motion_score,
+    get_frames,
+    get_key_frames,
 )
 
 parser = ArgumentParser()

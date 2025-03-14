@@ -11,10 +11,7 @@ def load_florence(
     from florence_tool import FlorenceTool
 
     FLORENCE = FlorenceTool(
-        hf_hub_or_path=hf_hub_or_path,
-        device=device,
-        dtype=dtype,
-        check_task_types=check_task_types
+        hf_hub_or_path=hf_hub_or_path, device=device, dtype=dtype, check_task_types=check_task_types
     )
     FLORENCE.load_model()
 
