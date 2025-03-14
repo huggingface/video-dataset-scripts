@@ -174,7 +174,7 @@ def main(args):
 
     # Write results to a parquet file.
     df = pd.DataFrame(results, columns=["video_path", "similarity"])
-    df.to_parquet(args.parquet_out_path, index=False, float_format="%.4f")
+    df.to_parquet(args.parquet_out_path, index=False)
 
     print(f"\nResults saved to {args.parquet_out_path}")
 
