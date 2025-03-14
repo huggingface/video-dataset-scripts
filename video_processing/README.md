@@ -1,12 +1,14 @@
 # Video Processing
 
 ## Overview of the available filters
+
 * Watermark detection
 * Aesthetic scoring
 * NSFW scoring
 * Motion scoring
 * Filtering videos w.r.t reference videos/images
 * Shot categories (color, lighting, composition, etc.)
+* VLM assessments
 
 ## Prerequisite
 The examples use the folder `cakeify/`, this can be any folder with videos.
@@ -192,6 +194,41 @@ Sample output:
 14  GJ2M77Yz60c-Scene-227.mp4  1.133161e-01   0.928008  [A cup of kfc chicken with a knife sticking ou...  [The image shows a cup of KFC chicken nuggets ...
 ```
 
+## Add VLM assessments
+
+It can be particularly useful for filtering a large pool of videos for particular video effects (such as squishing, deflating, inflating, zooming in, etc.). We use the [Gemma3 model](https://huggingface.co/docs/transformers/main/en/model_doc/gemma3) for its performance on inputs with interleaved images and texts.
+
+```bash
+python add_vlm_assessments.py --path frames --parquet-path=squish.parquet --effect squishing --use_fa2 --parquet-out-path squish.parquet
+```
+
+The output should look like so:
+
+```bash
+...
+      file                frames squishing  confidence
+0    2.mp4             [2_0.jpg]        no        1.00
+1   13.mp4            [13_0.jpg]        no        1.00
+2    1.mp4             [1_0.jpg]        no        0.90
+3    5.mp4             [5_0.jpg]        no        0.90
+4    3.mp4             [3_0.jpg]        no        1.00
+...
+```
+
+The command above shows the "squishing" effect. To apply the script on other effects, you should:
+
+* change the `SYSTEM_PROMPT` under [`modules/gemma3.py`](./modules/gemma3.py).
+* pass an appropriate effect through `--effect`.
+
+By default we use the [`google/gemma-3-27b-it`](https://hf.co/google/gemma-3-27b-it) checkpoint but the following ones are supported: 
+
+* google/gemma-3-4b-it
+* google/gemma-3-12b-it
+* google/gemma-3-27b-it
+
+> [!NOTE]
+> Gemma3 needs a Bfloat16-compatible device to perform effectively.
+
 ## Video to Scenes
 
 This will split a video into scenes using `pyscenedetect`. Videos are transcoded to ensure exact cuts, note that we can implement a lossless `copy` version however cuts will need to be snapped to keyframes which may produce bad clips (part scene A, part scene B).
@@ -280,3 +317,21 @@ You can vary the `--max_num_frames` and the `--batch_size` arguments to control 
 At the end of the execution of the script, you should expect to see parquet file having `video_path`s and the `similarity` scores.
 
 We leverage the vision encoder of SigLIP ([`google/siglip-so400m-patch14-384`](https://hf.co/google/siglip-so400m-patch14-384)) for this.
+
+You can optionally combine the assessments of a VLM (as in shown [here](#add-vlm-assessments)) to obtain better filters:
+
+```py
+import pandas as pd
+
+effect = "..."
+
+df = pd.read_parquet("parquet_file.parquet")
+vlm_stats = df["confidence"].describe().to_dict()
+reference_stats = df["similarity"].describe().to_dict()
+
+max_confidence = vlm_stats["max"]
+mean_similarity = reference_stats["mean"]
+df_filtered = df.query(
+    f"{effect}=='yes' & confidence>={max_confidence} & similarity>={mean_similarity}"
+)
+```
