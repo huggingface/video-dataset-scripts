@@ -5,7 +5,6 @@ from PIL import Image
 from tqdm import tqdm
 import numpy as np
 import argparse
-import csv
 import pandas as pd
 from frames import get_frames
 
