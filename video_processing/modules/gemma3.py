@@ -56,12 +56,22 @@ def recover_json_from_output(output: str):
 
 @torch.no_grad()
 @torch.inference_mode()
-def run_vlm(model, processor, messages):
+def run_vlm(model, processor, messages_list):
     inputs = processor.apply_chat_template(
-        messages, add_generation_prompt=True, tokenize=True, return_dict=True, return_tensors="pt"
+        messages_list,
+        tokenize=True,
+        return_dict=True,
+        return_tensors="pt",
+        add_generation_prompt=True,
+        padding=True,
+        padding_side="left",
     ).to(model.device)
-    generation = model.generate(**inputs, max_new_tokens=500, do_sample=False)
-    input_len = inputs["input_ids"].shape[-1]
-    generation = generation[0][input_len:]
-    decoded = processor.decode(generation, skip_special_tokens=True)
-    return decoded
+    generations = model.generate(**inputs, max_new_tokens=500, do_sample=False)
+
+    num_items = inputs["input_ids"].shape[0]
+    decoded_batch = []
+    for idx in range(num_items):
+        input_len = inputs["input_ids"].shape[-1]
+        generation = generations[idx, input_len:]
+        decoded_batch.append(processor.decode(generation, skip_special_tokens=True))
+    return decoded_batch
