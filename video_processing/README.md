@@ -199,8 +199,13 @@ Sample output:
 It can be particularly useful for filtering a large pool of videos for particular video effects (such as squishing, deflating, inflating, zooming in, etc.). We use the [Gemma3 model](https://huggingface.co/docs/transformers/main/en/model_doc/gemma3) for its performance on inputs with interleaved images and texts.
 
 ```bash
-python add_vlm_assessments.py --path frames --parquet-path=squish.parquet --effect squishing --use_fa2 --parquet-out-path squish.parquet
+python add_vlm_assessments.py \
+  --path frames --parquet-path=squish.parquet --chunk-size=4 \
+  --effect squishing --use-fa2 --parquet-out-path squish.parquet
 ```
+
+* `chunk_size` lets you control the batch of messages that are sent to the VLM.
+* Specifying `use_fa2` makes use of Flash Attention 2.
 
 The output should look like so:
 

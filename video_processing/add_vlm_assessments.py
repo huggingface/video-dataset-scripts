@@ -19,9 +19,9 @@ parser.add_argument(
     default="google/gemma-3-27b-it",
     choices=["google/gemma-3-4b-it", "google/gemma-3-12b-it", "google/gemma-3-27b-it"],
 )
-parser.add_argument("--use_fa2", action="store_true", help="If using Flash Attention 2.")
+parser.add_argument("--use-fa2", action="store_true", help="If using Flash Attention 2.")
 parser.add_argument("--parquet-out-path", type=str, required=True)
-parser.add_argument("--chunk_size", type=int, default=4, help="Infer on batches of rows")
+parser.add_argument("--chunk-size", type=int, default=4, help="Infer on batches of rows")
 args = parser.parse_args()
 path = pathlib.Path(args.path)
 
@@ -47,10 +47,12 @@ with tqdm() as pbar:
         messages = create_messages(key_frames, effect=effect)
 
         if idx % chunk_size == 0 and idx != 0:
-            answer_list = run_vlm(model, processor, messages_list)            
+            answer_list = run_vlm(model, processor, messages_list)
             answer_list = [recover_json_from_output(answer) for answer in answer_list]
 
-            row_list = [{f"{effect}": answer[effect], "confidence": float(answer["confidence"])} for answer in answer_list]
+            row_list = [
+                {f"{effect}": answer[effect], "confidence": float(answer["confidence"])} for answer in answer_list
+            ]
             data.extend(row_list)
             pbar.update()
             messages_list = list()
@@ -59,9 +61,9 @@ with tqdm() as pbar:
 
     # There might be remainder messages that we did not process in the for loop
     if messages_list:
-        answer_list = run_vlm(model, processor, messages_list)            
+        answer_list = run_vlm(model, processor, messages_list)
         answer_list = [recover_json_from_output(answer) for answer in answer_list]
-        
+
         row_list = [{f"{effect}": answer[effect], "confidence": float(answer["confidence"])} for answer in answer_list]
         data.extend(row_list)
 
