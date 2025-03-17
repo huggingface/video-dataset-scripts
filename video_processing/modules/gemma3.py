@@ -63,6 +63,8 @@ def run_vlm(model, processor, messages_list):
         return_dict=True,
         return_tensors="pt",
         add_generation_prompt=True,
+        # To enable batched inference with Gemma 3 we enable padding and
+        # specify the side for padding.
         padding=True,
         padding_side="left",
     ).to(model.device)
