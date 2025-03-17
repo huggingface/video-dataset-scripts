@@ -50,8 +50,8 @@ with tqdm() as pbar:
             answer_list = run_vlm(model, processor, messages_list)            
             answer_list = [recover_json_from_output(answer) for answer in answer_list]
 
-            row = [{f"{effect}": answer[effect], "confidence": float(answer["confidence"])} for answer in answer_list]
-            data.extend(row)
+            row_list = [{f"{effect}": answer[effect], "confidence": float(answer["confidence"])} for answer in answer_list]
+            data.extend(row_list)
             pbar.update()
             messages_list = list()
         else:
