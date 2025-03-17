@@ -204,8 +204,8 @@ python add_vlm_assessments.py \
   --effect squishing --use-fa2 --parquet-out-path squish.parquet
 ```
 
-* `chunk_size` lets you control the batch of messages that are sent to the VLM.
-* Specifying `use_fa2` makes use of Flash Attention 2.
+* `chunk-size` lets you control the batch of messages that are sent to the VLM.
+* Specifying `use-fa2` makes use of Flash Attention 2.
 
 The output should look like so:
 
