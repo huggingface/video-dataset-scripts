@@ -57,6 +57,14 @@ with tqdm() as pbar:
         else:
             messages_list.append(messages)
 
+    # There might be remainder messages that we did not process in the for loop
+    if messages_list:
+        answer_list = run_vlm(model, processor, messages_list)            
+        answer_list = [recover_json_from_output(answer) for answer in answer_list]
+        
+        row_list = [{f"{effect}": answer[effect], "confidence": float(answer["confidence"])} for answer in answer_list]
+        data.extend(row_list)
+
 shot_categorized_df = pd.DataFrame(data)
 
 print(shot_categorized_df)
